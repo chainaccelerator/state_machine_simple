@@ -4,16 +4,59 @@ class Process_state_simple {
 
     use log_simple;
 
-    private static $value_initial = 'initial';
-    private static $value_confirm = 'confirm';
-    private static $value_target = 'target';
-    private static $value_route = 'route';
-    private static $value_cancel = 'cancel';
+    public static $value_initial = 'initial';
+    public static $value_confirm = 'confirm';
+    public static $value_target = 'target';
+    public static $value_fail = 'fail';
+    public static $suffix_ok = '_ok';
+    public static $suffix_fail = '_fail';
+    public static $suffix_cancel = '_cancel';
     private $log_state = true;
-    private $name;
+    public $name;
     private $value;
     private $workflow_name;
     private $transition_list = array();
+
+    private function build(string $name, string $workflow_name, string $value, $log_state = true)
+    {
+        $this->log_state = $log_state;
+        $this->name = $name;
+        $this->value = $value;
+        $this->workflow_name = $workflow_name;
+
+        return true;
+    }
+
+    public function build_initial(string $name, string $workflow_name)
+    {
+        return $this->build($name . self::$suffix_ok, $workflow_name, self::$value_initial, true);
+    }
+
+    public function build_confirm(string $name, string $workflow_name)
+    {
+        return $this->build($name . self::$suffix_ok, $workflow_name, self::$value_confirm, true);
+    }
+
+    public function build_cancel(string $name, string $workflow_name)
+    {
+        return $this->build($name . self::$suffix_cancel, $workflow_name, self::$value_cancel, true);
+    }
+
+    public function build_target(string $name, string $workflow_name)
+    {
+        return $this->build($name . self::$suffix_ok, $workflow_name, self::$value_target, true);
+    }
+
+    public function build_fail(string $name, string $workflow_name)
+    {
+        return $this->build($name . self::$suffix_fail, $workflow_name, self::$value_fail, true);
+    }
+
+    public function transition_add(Process_transition_simple $transition)
+    {
+
+        $this->transition_list[$transition->name] = $transition;
+    }
 
     public function confirm(string $data_ref = ''){
 
@@ -45,14 +88,43 @@ class Process_state_simple {
 
 class Process_transition_simple {
 
-    private $state_start;
-    private $state_end;
-    private $condition;
-    private $name;
+    private $state_end_list = array();
+    private $rule_list = array();
+    public $name;
     private $required_state = true;
-    private $acync_state = false;
-    private $input_params = array();
+    private $async_state = false;
     private $workflow_name;
+
+    public function build(string $name,
+                          string $workflow_name,
+                          bool $required_state = true,
+                          bool $async_state = false
+    )
+    {
+
+        $this->name = $name;
+        $this->required_state = $required_state;
+        $this->async_state = $async_state;
+        $this->workflow_name = $workflow_name;
+
+        return true;
+    }
+
+    public function rule_list_add(Process_rule_simple $rule)
+    {
+
+        $this->rule_list[] = $rule;
+
+        return true;
+    }
+
+    public function state_end_list_add(Process_state_simple $state_end)
+    {
+
+        $this->state_end_list[] = $state_end;
+
+        return true;
+    }
 
     public function run(){
 
@@ -75,7 +147,7 @@ class Process_transition_simple {
 class Process_rule_simple {
 
     private $input_params = array();
-    private $name;
+    public $name;
     private $value_ok;
     private $transition_ok;
     private $value_ko;
@@ -84,9 +156,68 @@ class Process_rule_simple {
     private $required_ok_state = true;
     private $workflow_name;
 
-    public function set(string $workflow_name, array $input_params) {
+    public function build_transition(string $function)
+    {
+        $function = 'build_' . $function;
+        $state = new Process_state_simple();
+        $state->$function($this->name, $this->workflow_name);
 
+        $transition = new Process_transition_simple();
+        $transition->build($this->name . '_' . $function, $this->workflow_name, true, false);
+        $transition->state_end_list_add($state);
+
+        return $transition;
+    }
+
+    public function build_transition_ok()
+    {
+        return $this->build_transition(Process_state_simple::$value_target);
+    }
+
+    public function build_transition_ko()
+    {
+        return $this->build_transition(Process_state_simple::$value_cancel);
+    }
+
+    public function build_transition_fail()
+    {
+        return $this->build_transition(Process_state_simple::$value_fail);
+    }
+
+    public function build_transitions()
+    {
+        $this->transition_ok = $this->build_transition_ok();
+        $this->transition_ko = $this->build_transition_ko();
+        $this->transition_fail = $this->build_transition_fail();
+
+        return true;
+    }
+
+    public function build(
+        string $name,
+        bool $value_ok,
+        bool $value_ko,
+        string $workflow_name,
+        bool $required_ok_state = true,
+        array $input_params = array())
+    {
+
+        $this->input_params = $input_params;
+        $this->name = $name;
+
+        $this->build_transitions();
+
+        $this->value_ok = $value_ok;
+        $this->value_ko = $value_ko;
+        $this->required_ok_state = $required_ok_state;
         $this->workflow_name = $workflow_name;
+
+        return true;
+    }
+
+    public function input_params_set(array $input_params = array())
+    {
+
         $this->input_params = $input_params;
 
         return true;
@@ -112,34 +243,61 @@ class Process_rule_simple {
     }
 }
 
-class Process_condition_simple {
-
-    private $input_params = array();
-    private $name;
-    private $rule_list = array();
-    private $workflow_name;
-
-    public function set(string $workflow_name, array $input_params) {
-
-        $this->workflow_name = $workflow_name;
-        $this->input_params = $input_params;
-
-        return true;
-    }
-
-    public function run()
-    {
-        foreach($this->rules_list as $rule) {
-
-            $rule->test();
-        }
-        return true;
-    }
-}
-
 trait process_workflow_simple {
 
-    private static $workflow_state_initial_list = array();
+    private $workflow_state_initial_list = array();
 
     private $workflow_name;
+
+    public function process_workflow_init()
+    {
+
+        $this->workflow_name = get_class($this);
+
+        return true;
+    }
+
+    public function process_workflow_rule_build(string $name)
+    {
+
+        $rule = new Process_rule_simple();
+        $rule->build($name, true, false, true, $this->workflow_name, true, array());
+
+        return $rule;
+    }
+
+    public function process_workflow_state_target_build(string $name)
+    {
+        $state = new Process_state_simple();
+        $state->build_target($name);
+
+        return $state;
+    }
+
+    public function process_workflow_state_initial_build()
+    {
+        $state = new Process_state_simple();
+        $state->build_initial('initial');
+
+        return $state;
+    }
+
+    public function process_workflow_transition_build(string $name)
+    {
+
+        $transition = new Process_transition_simple();
+        $transition->build($name, $this->workflow_name, true, false);
+
+        return $transition;
+    }
+
+    public function process_workflow_state_initial_add(Process_state_simple $state_inital)
+    {
+
+        $this->workflow_state_initial_list[$state_inital->name] = $state_inital;
+
+        return true;
+    }
+
+
 }
