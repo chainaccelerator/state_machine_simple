@@ -1,0 +1,67 @@
+{
+  "state_initial": [
+    {
+      "type_success": true,
+      "name": "i",
+      "value": "initial",
+      "log_state": true,
+      "workflow_name": "transaction",
+      "transition_list": [
+        {
+          "state_end_list": [
+            {
+              "type_success": true,
+              "name": "6",
+              "value": "target",
+              "log_state": true,
+              "workflow_name": "transaction",
+              "transition_list": []
+            },
+            {
+              "type_success": true,
+              "name": "8",
+              "value": "route",
+              "log_state": true,
+              "workflow_name": "transaction",
+              "transition_list": []
+            }
+          ],
+          "name": "i->6",
+          "required_state": true,
+          "acync_state": false,
+          "input_params": [],
+          "workflow_name": "transaction",
+          "condition": {
+            "input_params": [],
+            "name": "6.1",
+            "workflow_name": "transaction",
+            "rule_list": [
+              {
+                "name": "sign_from",
+                "value_ok_to_test": true,
+                "transition_ok": {
+                },
+                "value_ko_to_test": false,
+                "transition_ko": {
+                },
+                "transition_fail": {
+                },
+                "required_ok_state = true;
+                "workflow_name;
+              },
+              {
+                "name": "sign_to"
+              },
+              {
+                "name": "balance_check"
+              },
+              {
+                "name": "double_spend"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

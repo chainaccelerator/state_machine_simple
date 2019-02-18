@@ -4,16 +4,16 @@ class Process_state_simple {
 
     use log_simple;
 
+    private static $value_initial = 'initial';
     private static $value_confirm = 'confirm';
     private static $value_target = 'target';
+    private static $value_route = 'route';
     private static $value_cancel = 'cancel';
-    private $initial_state = false;
-    private $type_success = true;
+    private $log_state = true;
     private $name;
-    private $index;
     private $value;
-    private $log_state;
     private $workflow_name;
+    private $transition_list = array();
 
     public function confirm(string $data_ref = ''){
 
@@ -47,10 +47,10 @@ class Process_transition_simple {
 
     private $state_start;
     private $state_end;
-    private $contition_list = array();
+    private $condition;
     private $name;
-    private $index;
-    private $thread_state = false;
+    private $required_state = true;
+    private $acync_state = false;
     private $input_params = array();
     private $workflow_name;
 
@@ -58,11 +58,8 @@ class Process_transition_simple {
 
         $this->state_start->confirm();
         $this->state_end->target();
+        $condition_obj->run();
 
-        foreach($this->contition_list as $condition_obj) {
-
-            $condition_obj->run();
-        }
         return true;
     }
 
@@ -79,13 +76,11 @@ class Process_rule_simple {
 
     private $input_params = array();
     private $name;
-    private $index;
     private $value_ok;
     private $transition_ok;
     private $value_ko;
     private $transition_ko;
     private $transition_fail;
-    private $test_name;
     private $required_ok_state = true;
     private $workflow_name;
 
@@ -121,7 +116,6 @@ class Process_condition_simple {
 
     private $input_params = array();
     private $name;
-    private $index;
     private $rule_list = array();
     private $workflow_name;
 
@@ -145,8 +139,7 @@ class Process_condition_simple {
 
 trait process_workflow_simple {
 
-    private static $workflow_state_list = array();
-    private static $workflow_transition_list = array();
+    private static $workflow_state_initial_list = array();
 
     private $workflow_name;
 }
