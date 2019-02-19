@@ -2,12 +2,12 @@
 
 class Transaction
 {
-
     use process_workflow_simple;
 
-    public function build()
+    public function build(string $version)
     {
 
+        $this->workflow_version = $version;
         $rule_sign_from_verif = $this->process_workflow_rule_build('sign_from_verif');
         $rule_sign_from_verif->input_params_set(array("amount", "address_form", "msg_signed", "public_key"));
         $rule_sign_to_get = $this->process_workflow_rule_build('sign_to_get');

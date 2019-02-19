@@ -247,7 +247,9 @@ trait process_workflow_simple {
 
     private $workflow_state_initial_list = array();
 
+    private $workflow_version;
     private $workflow_name;
+    private $workflow_child = array();
 
     public function process_workflow_init()
     {
