@@ -243,7 +243,8 @@ class Process_rule_simple {
     }
 }
 
-trait process_workflow_simple {
+trait Process_workflow_simple
+{
 
     private $workflow_state_initial_list = array();
 
@@ -300,6 +301,4 @@ trait process_workflow_simple {
 
         return true;
     }
-
-
 }
