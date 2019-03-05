@@ -37,43 +37,43 @@ Trait Process_bftr_simple
     /**
      * @var string
      */
-    private static $process_bftr_rule_height_new_prepare_func = 'bftr_height_new_prepare';
+    public static $process_bftr_rule_height_new_prepare_func = 'process_bftr_height_new_prepare';
     /**
      * @var string
      */
-    private static $process_bftr_rule_broadcast_new_state_to_peers_func = 'bftr_broadcast_new_state_to_peers';
+    public static $process_bftr_rule_broadcast_new_state_to_peers_func = 'process_bftr_broadcast_new_state_to_peers';
     /**
      * @var string
      */
-    private static $process_bftr_rule_height_new_wait_func = 'bftr_height_new_wait';
+    public static $process_bftr_rule_height_new_wait_func = 'process_bftr_height_new_wait';
     /**
      * @var string
      */
-    private static $process_bftr_rule_precommit_count_func = 'bftr_precommit_count';
+    public static $process_bftr_rule_precommit_count_func = 'process_bftr_precommit_count';
     /**
      * @var string
      */
-    private static $process_bftr_rule_precommit_func = 'bftr_precommit';
+    public static $process_bftr_rule_precommit_func = 'process_bftr_precommit';
     /**
      * @var string
      */
-    private static $process_bftr_rule_bftr_commit_wait_func = 'bftr_commit_wait';
+    public static $process_bftr_rule_bftr_commit_wait_func = 'process_bftr_commit_wait';
     /**
      * @var string
      */
-    private static $process_bftr_rule_bftr_block_get_func = 'bftr_block_get';
+    public static $process_bftr_rule_bftr_block_get_func = 'process_bftr_block_get';
     /**
      * @var string
      */
-    private static $process_bftr_rule_bftr_block_stage_func = 'bftr_block_stage';
+    public static $process_bftr_rule_bftr_block_stage_func = 'process_bftr_block_stage';
     /**
      * @var string
      */
-    private static $process_bftr_rule_bftr_block_broadcast_func = 'bftr_block_broadcast';
+    public static $process_bftr_rule_bftr_block_broadcast_func = 'process_bftr_block_broadcast';
     /**
      * @var string
      */
-    private static $process_bftr_rule_bftr_commit_time_set_func = 'bftr_commit_time_set';
+    public static $process_bftr_rule_bftr_commit_time_set_func = 'process_bftr_commit_time_set';
 
     /**
      * @var Block_simple
@@ -188,6 +188,43 @@ Trait Process_bftr_simple
         $transition_loop = $this->process_workflow_build_transition(__FUNCTION__);
 
         return $this->process_workflow_transition_add($transition_loop);
+    }
+
+    public function process_bftr_height_new_prepare(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_height_new_wait(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_precommit_count(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_precommit(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_commit_wait(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_block_get(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_block_stage(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_block_broadcast(array $input_params = array()){
+
+        return true;
+    }
+    public function process_bftr_commit_time_set(array $input_params = array()){
+
+        return true;
     }
 }
 
