@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * Class Transaction
+ */
 class Transaction
 {
     use process_workflow_simple;
 
+    /**
+     * @param string $version
+     * @return bool
+     */
     public function build(string $version)
     {
 

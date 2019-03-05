@@ -1,69 +1,159 @@
 <?php
 
+/**
+ * Class Bftr_commit
+ */
+class Bftr_commit {
+
+    use Block_simple;
+}
+
+/**
+ * Trait Bftr_simple
+ */
 Trait Bftr_simple
 {
-
     use Process_workflow_simple;
+    use Chain_simple;
 
+    /**
+     * @var float|int
+     */
     private static $bftr_precommit_found_min = 2 / 3;
+    /**
+     * @var float|int
+     */
     private static $bftr_precommit_ttl = 2 / 600000;
+    /**
+     * @var int
+     */
     private static $bftr_precommit_wait = 1000;
+
+    /**
+     * @var float|int
+     */
     private static $bftr_commit_found_min = 2 / 3;
+    /**
+     * @var float|int
+     */
     private static $bftr_commit_ttl = 2 / 600000;
+    /**
+     * @var int
+     */
     private static $bftr_commit_wait = 1000;
+    /**
+     * @var string
+     */
+    private static $bftr_commit_target_state = 'commited';
+    /**
+     * @var string
+     */
+    private static $bftr_commit_OK_state = 'init_OK';
+    /**
+     * @var string
+     */
+    private static $bftr_commit_KO_state = 'init_KO';
+    /**
+     * @var string
+     */
+    private static $bftr_commit_fail_state = 'init_fail';
 
-    public static function btfr_ttl_verif_and_wait(int $timestamp, int $ttl, int $wait)
-    {
+    /**
+     * @var Block_simple
+     */
+    private $bftr_commit;
+    /**
+     * @var int
+     */
+    private $bftr_commit_timestamp;
 
-        while (self::btfr_ttl_verif($timestamp, $ttl) === true) {
 
-            sleep($wait);
-        }
-        return false;
-    }
-
-    public static function btfr_ttl_verif(int $timestamp, int $ttl)
-    {
-
-        if (time() - $timestamp > $ttl) {
-
-            return false;
-        }
-        return true;
-    }
-
+    /**
+     * @param string $version
+     * @return bool
+     */
     public function bftr_build(string $version)
     {
         $this->workflow_version = $version;
 
-        // prepare a new
+
+        $rule_height_new_prepare = new Process_rule_simple();
+        $rule_height_new_prepare->build('bftr_height_new_prepare', true, false, $this->workflow_name, true, array());
+
+        $rule_broadcast_new_state_to_peers = new Process_rule_simple();
+        $rule_broadcast_new_state_to_peers->build('bftr_broadcast_new_state_to_peers', true, false, $this->workflow_name, true, array());
+
+        $transition_commit_start = new Process_transition_simple();
+        $transition_commit_start->build('commit_start', true, false);
+        $transition_commit_start->rule_list_add($rule_height_new_prepare);
+        $transition_commit_start->rule_list_add($rule_broadcast_new_state_to_peers);
+
+        $this->process_workflow_init(self::$bftr_commit_target_state, $transition_commit_start);
+
+        $rule_height_new_wait = new Process_rule_simple();
+        $rule_height_new_wait->build('bftr_height_new_wait', true, false, $this->workflow_name, true, array());
+
+        $transition_height_new_ready = new Process_transition_simple();
+        $transition_height_new_ready->build('bftr_height_new_ready', true, false);
+        $transition_height_new_ready->rule_list_add($transition_height_new_ready);
+
+        $this->process_workflow_transition_add($transition_height_new_ready);
+
+
+
+        $transition = new Process_transition_simple();
+        $transition->build('bftr_height_new_propose', true, false);
+        $transition->build_transition_fail();
+        $transition->build_transition_ko();
+        $this->process_workflow_transition_add($transition);
+
+        $transition = new Process_transition_simple();
+        $transition->build('bftr_height_new_precommit', true, false);
+        $transition->build_transition_fail();
+        $transition->build_transition_ko();
+        $this->process_workflow_transition_add($transition);
 
         return true;
     }
 
-    public function bftr_height_new_prepare()
+    /**
+     *
+     */
+    public function bftr_prepare_new_height()
     {
+        $this->bftr_commit = $this->block_data;
 
-
-        $this->bftr_broadcast_new_state_to_peers(time());
+        return true;
     }
 
-    public function bftr_broadcast_new_state_to_peers(int $timestamp_start)
+    /**
+     *
+     */
+    public function bftr_broadcast_new_state_to_peers()
     {
+        $this->bftr_commit_timestamp = time();
 
-        while (btfr_ttl_verif_and_wait($timestamp_start, self::$bftr_precommit_ttl, self::$bftr_precommit_wait) === false) {
+        while ($this->process_workflow_ttl_verif_and_wait(
+                $this->bftr_commit_timestamp,
+                self::$bftr_precommit_ttl,
+                self::$bftr_precommit_wait) === false) {
 
-            return $this->bftr_height_new_propose(time(), $timestamp_start);
+            return $this->bftr_broadcast_new_state_to_peers();
         }
-        return $this->bftr_broadcast_new_state_to_peers($timestamp_start);
+        return false;
     }
 
-    public function bftr_height_new_propose(int $timestamp_start, int $commit_time)
+    /**
+     * @param int $timestamp_start
+     * @param int $commit_time
+     */
+    public function bftr_height_new_propose()
     {
-
-        $this->bftr_height_new_prevote($timestamp_start);
     }
 
+    /**
+     * @param int $timestamp_start
+     */
     public function bftr_height_new_prevote(int $timestamp_start)
     {
 
@@ -71,6 +161,10 @@ Trait Bftr_simple
         $this->bftr_height_new_precommit($timestamp_start, $precommit_found);
     }
 
+    /**
+     * @param int $timestamp_start
+     * @param $precommit_found
+     */
     public function bftr_height_new_precommit(int $timestamp_start, $precommit_found)
     {
 
@@ -81,46 +175,67 @@ Trait Bftr_simple
         return return bftr_height_new_propose($commit_time);
     }
 
+    /**
+     * @return bool
+     */
     public function bftr_commit()
     {
 
-        $commit_found = $this->bftr_commit_get();
+        $commit_found_list = $this->bftr_commit_list_get();
 
-        if ($commit_found > self::$bftr_commit_found_min) {
+        foreach($commit_found_list as $bftr_commit) {
 
-            $this->bftr_commit_set_commit_time();
+            if (count($commit_found_list) > self::$bftr_commit_found_min) {
 
-            return $this->bftr_commit_get_block();
-        }
-        while (btfr_ttl_verif_and_wait($block->timestamp, self::$bftr_commit_ttl, self::$bftr_commit_wait) === true) {
+                $this->bftr_commit_set_commit_time();
 
-            $this->bftr_commit();
+                return $this->bftr_commit_get_block();
+            }
+            while ($this->btfr_ttl_verif_and_wait($bftr_commit->timestamp, self::$bftr_commit_ttl, self::$bftr_commit_wait) === true) {
+
+                $this->bftr_commit();
+            }
         }
         return false;
     }
 
-    public function bftr_commit_get()
+    /**
+     * @return array
+     */
+    public function bftr_commit_list_get()
     {
         // @todo
 
-        return 1;
+        return array();
     }
 
+    /**
+     *
+     */
     public function bftr_commit_set_commit_time()
     {
 
     }
 
+    /**
+     *
+     */
     public function bftr_commit_get_block_save()
     {
 
     }
 
+    /**
+     *
+     */
     public function bftr_commit_get_block_stage()
     {
 
     }
 
+    /**
+     *
+     */
     public function bftr_commit_get_block_broadcast()
     {
 
