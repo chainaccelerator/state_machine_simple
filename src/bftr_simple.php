@@ -1,5 +1,12 @@
 <?php
 
+class Bftr_rule_definition{
+
+    public $param_list = array();
+    public $required_ok_state = true;
+
+}
+
 /**
  * Class Bftr_commit
  */
@@ -58,6 +65,17 @@ Trait Bftr_simple
      */
     private static $bftr_commit_fail_state = 'init_fail';
 
+    private static $bftr_rule_height_new_prepare_func = 'bftr_height_new_prepare';
+    private static $bftr_rule_broadcast_new_state_to_peers_func = 'bftr_broadcast_new_state_to_peers';
+    private static $bftr_rule_height_new_wait_func = 'bftr_height_new_wait';
+    private static $bftr_rule_precommit_count_func = 'bftr_precommit_count';
+    private static $bftr_rule_precommit_func = 'bftr_precommit';
+    private static $bftr_rule_bftr_commit_wait_func = 'bftr_commit_wait';
+    private static $bftr_rule_bftr_block_get_func = 'bftr_block_get';
+    private static $bftr_rule_bftr_block_stage_func = 'bftr_block_stage';
+    private static $bftr_rule_bftr_block_broadcast_func = 'bftr_block_broadcast';
+    private static $bftr_rule_bftr_commit_time_set_func = 'bftr_commit_time_set';
+
     /**
      * @var Block_simple
      */
@@ -75,107 +93,108 @@ Trait Bftr_simple
     {
         $this->workflow_version = $version;
 
-        $this->build_commit_start();
-        $this->build_height_new_ready();
-        $this->build_propose();
-        $this->build_prevote();
-        $this->build_precommit();
-        $this->build_commit_end();
-        $this->build_loop();
+        $this->bftr_build_commit_start();
+        $this->bftr_build_height_new_ready();
+        $this->bftr_build_propose();
+        $this->bftr_build_prevote();
+        $this->bftr_build_precommit();
+        $this->bftr_build_commit_end();
+        $this->bftr_build_loop();
 
         return true;
     }
 
-    private function build_commit_start(){
+    private function bftr_build_commit_start(){
 
-        $rule_height_new_prepare = new Process_rule_simple();
-        $rule_height_new_prepare->build('bftr_height_new_prepare', true, false, $this->workflow_name, true, array());
+        $rule_list_definition = array();
+        $rule_list_definition[self::$bftr_rule_height_new_prepare_func] = new Bftr_rule_definition();
+        $rule_list_definition[self::$bftr_rule_broadcast_new_state_to_peers_func] = new Bftr_rule_definition();
 
-        $rule_broadcast_new_state_to_peers = new Process_rule_simple();
-        $rule_broadcast_new_state_to_peers->build('bftr_broadcast_new_state_to_peers', true, false, $this->workflow_name, true, array());
-
-        $transition_commit_start = new Process_transition_simple();
-        $transition_commit_start->build('commit_start', true, false);
-        $transition_commit_start->rule_list_add($rule_height_new_prepare);
-        $transition_commit_start->rule_list_add($rule_broadcast_new_state_to_peers);
+        $transition_commit_start = $this->bftr_build_transition(__FUNCTION__, $rule_list_definition);
 
         return $this->process_workflow_init(self::$bftr_commit_target_state, $transition_commit_start);
     }
 
-    private function build_height_new_ready(){
+    private function bftr_build_height_new_ready(){
 
-        $rule_height_new_wait = new Process_rule_simple();
-        $rule_height_new_wait->build('bftr_height_new_wait', true, false, $this->workflow_name, true, array());
+        $rule_list_definition = array();
+        $rule_list_definition[self::$bftr_rule_height_new_wait_func] = new Bftr_rule_definition();
 
-        $transition_height_new_ready = new Process_transition_simple();
-        $transition_height_new_ready->build('bftr_height_new_ready', true, false);
-        $transition_height_new_ready->rule_list_add($transition_height_new_ready);
+        $transition_height_new_ready = $this->bftr_build_transition(__FUNCTION__, $rule_list_definition);
 
         return $this->process_workflow_transition_add($transition_height_new_ready);
     }
 
-    private function build_propose(){
+    private function bftr_build_propose(){
 
-        $transition_propose = new Process_transition_simple();
-        $transition_propose->build('bftr_propose', true, false);
+        $transition_propose = $this->bftr_build_transition(__FUNCTION__);
 
         return $this->process_workflow_transition_add($transition_propose);
     }
 
-    private function build_prevote(){
+    private function bftr_build_prevote(){
 
-        $transition_prevote = new Process_transition_simple();
-        $transition_prevote->build('bftr_prevote', true, false);
+        $transition_prevote = $this->bftr_build_transition(__FUNCTION__);
 
         return $this->process_workflow_transition_add($transition_prevote);
     }
 
-    private function build_precommit(){
+    private function bftr_build_precommit(){
 
-        $rule_precommit_count = new Process_rule_simple();
-        $rule_precommit_count->build('bftr_precommit_count', true, false, $this->workflow_name, true, array());
+        $rule_list_definition = array();
+        $rule_list_definition[self::$bftr_rule_precommit_count_func] = new Bftr_rule_definition();
 
-        $transition_precommit = new Process_transition_simple();
-        $transition_precommit->build('bftr_precommit', true, false);
-        $transition_precommit->rule_list_add($rule_precommit_count);
+        $transition_precommit = $this->bftr_build_transition(__FUNCTION__, $rule_list_definition);
 
         return $this->process_workflow_transition_add($transition_precommit);
     }
 
-    private function build_commit_end() {
+    private function bftr_build_commit_end() {
 
-        $rule_commit_wait = new Process_rule_simple();
-        $rule_commit_wait->build('bftr_commit_wait', true, false, $this->workflow_name, true, array());
+        $rule_list_definition = array();
+        $rule_list_definition[self::$bftr_rule_bftr_commit_wait_func] = new Bftr_rule_definition();
+        $rule_list_definition[self::$bftr_rule_bftr_block_get_func] = new Bftr_rule_definition();
+        $rule_list_definition[self::$bftr_rule_bftr_block_stage_func] = new Bftr_rule_definition();
+        $rule_list_definition[self::$bftr_rule_bftr_block_broadcast_func] = new Bftr_rule_definition();
+        $rule_list_definition[self::$bftr_rule_bftr_commit_time_set_func] = new Bftr_rule_definition();
 
-        $rule_block_get = new Process_rule_simple();
-        $rule_block_get->build('bftr_block_get', true, false, $this->workflow_name, true, array());
-
-        $rule_block_stage = new Process_rule_simple();
-        $rule_block_stage->build('bftr_block_stage', true, false, $this->workflow_name, true, array());
-
-        $rule_block_broadcast = new Process_rule_simple();
-        $rule_block_broadcast->build('bftr_block_broadcast', true, false, $this->workflow_name, true, array());
-
-        $rule_commit_time_set = new Process_rule_simple();
-        $rule_commit_time_set->build('bftr_commit_time_set', true, false, $this->workflow_name, true, array());
-
-        $transition_commit_end = new Process_transition_simple();
-        $transition_commit_end->build('bftr_commit_end', true, false);
-        $transition_commit_end->rule_list_add($rule_commit_wait);
-        $transition_commit_end->rule_list_add($rule_block_get);
-        $transition_commit_end->rule_list_add($rule_block_stage);
-        $transition_commit_end->rule_list_add($rule_block_broadcast);
-        $transition_commit_end->rule_list_add($rule_commit_time_set);
+        $transition_commit_end = $this->bftr_build_transition(__FUNCTION__, $rule_list_definition);
 
         return $this->process_workflow_transition_add($transition_commit_end);
     }
 
-    private function build_loop(){
+    private function bftr_build_loop(){
 
-        $transition_loop = new Process_transition_simple();
-        $transition_loop->build('bftr_loop', true, false);
+        $transition_loop = $this->bftr_build_transition(__FUNCTION__);
 
         return $this->process_workflow_transition_add($transition_loop);
     }
 
+    private function bftr_build_rule(string $function_name, array $param_list = array(), bool $required_ok_state = true){
+
+        $rule = new Process_rule_simple();
+        $rule->build($function_name, true, false, $this->workflow_name, $required_ok_state, $param_list);
+
+        return $rule;
+    }
+
+    private function bftr_build_rules_add(Process_transition_simple $transition, array $rule_list_definition = array()) {
+
+        foreach($rule_list_definition as $rule_name => $rule_definition) {
+
+            $rule = $this->bftr_build_rule($rule_name, $rule_definition->param_list, $rule_definition->required_state_ok);
+            $transition->rule_list_add($rule);
+        }
+        return $transition;
+    }
+
+    private function bftr_build_transition(string $transition_name, array $rule_list_definition = array()){
+
+        $transition = new Process_transition_simple();
+        $transition->build($transition_name, $this->workflow_name, false);
+
+        $transition = $this->bftr_build_rules_add($transition, $rule_list_definition);
+
+        return $transition;
+    }
 }
