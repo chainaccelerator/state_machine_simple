@@ -76,9 +76,23 @@ Trait Process_bftr_simple
      */
     public static $process_bftr_rule_bftr_commit_time_set_func = 'process_bftr_commit_time_set';
 
+    /**
+     * @var
+     */
     public $process_bftr_height_new_push_address;
+    /**
+     * @var int
+     */
     public $process_bftr_height_new_wait_total = 0;
-    public $process_bftr_precommit_count = 0;s
+    /**
+     * @var int
+     */
+    public $process_bftr_precommit_count = 0;
+
+    /**
+     * @var string
+     */
+    private $process_bftr_previous = '';
     /**
      * @param string $version
      * @return bool
@@ -99,6 +113,19 @@ Trait Process_bftr_simple
     }
 
     /**
+     * @param string $transition_name
+     * @return bool
+     */
+    private function process_bftr_follow(string $transition_name){
+
+        $this->workflow_transition_list[$this->process_bftr_previous]->transition_ok = $this->workflow_transition_list[$transition_name];
+
+        $this->process_bftr_previous = $transition_name;
+
+        return true;
+    }
+
+    /**
      * @return bool
      */
     private function process_bftr_build_commit_start(){
@@ -109,7 +136,9 @@ Trait Process_bftr_simple
 
         $transition_commit_start = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
-        return $this->process_workflow_init(__FUNCTION__, $transition_commit_start);
+        $this->process_workflow_init(__FUNCTION__, $transition_commit_start);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
     /**
@@ -122,7 +151,9 @@ Trait Process_bftr_simple
 
         $transition_height_new_ready = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
-        return $this->process_workflow_transition_add($transition_height_new_ready);
+        $this->process_workflow_transition_add($transition_height_new_ready);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
     /**
@@ -132,7 +163,9 @@ Trait Process_bftr_simple
 
         $transition_propose = $this->process_workflow_build_transition(__FUNCTION__);
 
-        return $this->process_workflow_transition_add($transition_propose);
+        $this->process_workflow_transition_add($transition_propose);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
     /**
@@ -142,7 +175,9 @@ Trait Process_bftr_simple
 
         $transition_prevote = $this->process_workflow_build_transition(__FUNCTION__);
 
-        return $this->process_workflow_transition_add($transition_prevote);
+        $this->process_workflow_transition_add($transition_prevote);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
     /**
@@ -160,7 +195,9 @@ Trait Process_bftr_simple
 
         $transition_precommit->rule_set($rule_precommit_count);
 
-        return $this->process_workflow_transition_add($transition_precommit);
+        $this->process_workflow_transition_add($transition_precommit);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
     /**
@@ -177,7 +214,9 @@ Trait Process_bftr_simple
 
         $transition_commit_end = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
-        return $this->process_workflow_transition_add($transition_commit_end);
+        $this->process_workflow_transition_add($transition_commit_end);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
     /**
@@ -187,9 +226,15 @@ Trait Process_bftr_simple
 
         $transition_loop = $this->process_workflow_build_transition(__FUNCTION__);
 
-        return $this->process_workflow_transition_add($transition_loop);
+        $this->process_workflow_transition_add($transition_loop);
+
+        return $this->process_bftr_follow(__FUNCTION__);
     }
 
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_height_new_prepare(array $input_params = array()){
 
         if(empty(self::$chain_sign) === true) {
@@ -201,16 +246,26 @@ Trait Process_bftr_simple
         return $height;
     }
 
+    /**
+     * @return float|int
+     */
     public function process_bftr_commit_ttl_get() {
 
         return self::$process_bftr_commit_ttl;
     }
 
+    /**
+     * @return int
+     */
     public function process_bftr_commit_wait_get() {
 
         return self::$process_bftr_commit_wait;
     }
 
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_height_new_wait(array $input_params = array()){
 
         $msg = json_encode($this->block_data);
@@ -224,6 +279,10 @@ Trait Process_bftr_simple
         return true;
     }
 
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_precommit_count(array $input_params = array()){
 
         $response = $this->socket_client_push_broadcast_request_count($this->process_bftr_height_new_push_address);
@@ -232,16 +291,28 @@ Trait Process_bftr_simple
 
         return true;
     }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_precommit(array $input_params = array()){
 
         return true;
     }
 
+    /**
+     * @return float|int
+     */
     public function process_bftr_precommit_found_min_get(){
 
         return self::$process_bftr_precommit_found_min;
     }
 
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_commit_wait(array $input_params = array()){
 
         $process_bftr_precommit_found_min = $this->process_bftr_precommit_found_min_get();
@@ -252,18 +323,38 @@ Trait Process_bftr_simple
         }
         return true;
     }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_block_get(array $input_params = array()){
 
         return true;
     }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_block_stage(array $input_params = array()){
 
         return true;
     }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_block_broadcast(array $input_params = array()){
 
         return true;
     }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
     public function process_bftr_commit_time_set(array $input_params = array()){
 
         return true;
