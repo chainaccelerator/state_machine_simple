@@ -129,13 +129,23 @@ Trait Bftr_simple
         $rule_block_broadcast = new Process_rule_simple();
         $rule_block_broadcast->build('bftr_block_broadcast', true, false, $this->workflow_name, true, array());
 
+        $rule_commit_time_set = new Process_rule_simple();
+        $rule_commit_time_set->build('bftr_commit_time_set', true, false, $this->workflow_name, true, array());
+
         $transition_commit_end = new Process_transition_simple();
         $transition_commit_end->build('bftr_commit_end', true, false);
         $transition_commit_end->rule_list_add($rule_commit_wait);
         $transition_commit_end->rule_list_add($rule_block_get);
         $transition_commit_end->rule_list_add($rule_block_stage);
         $transition_commit_end->rule_list_add($rule_block_broadcast);
+        $transition_commit_end->rule_list_add($rule_commit_time_set);
 
+        $this->process_workflow_transition_add($transition_commit_end);
+
+        $transition_loop = new Process_transition_simple();
+        $transition_loop->build('bftr_loop', true, false);
+
+        $this->process_workflow_transition_add($transition_loop);
 
         return true;
     }
