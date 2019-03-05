@@ -114,8 +114,8 @@ Trait Bftr_simple
     private function bftr_build_commit_start(){
 
         $rule_list_definition = array();
-        $rule_list_definition[self::$bftr_rule_height_new_prepare_func] = new Process_rule_definition();
-        $rule_list_definition[self::$bftr_rule_broadcast_new_state_to_peers_func] = new Process_rule_definition();
+        $rule_list_definition[self::$bftr_rule_height_new_prepare_func] = new Process_rule_definition_simple();
+        $rule_list_definition[self::$bftr_rule_broadcast_new_state_to_peers_func] = new Process_rule_definition_simple();
 
         $transition_commit_start = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
@@ -128,7 +128,7 @@ Trait Bftr_simple
     private function bftr_build_height_new_ready(){
 
         $rule_list_definition = array();
-        $rule_list_definition[self::$bftr_rule_height_new_wait_func] = new Process_rule_definition();
+        $rule_list_definition[self::$bftr_rule_height_new_wait_func] = new Process_rule_definition_simple();
 
         $transition_height_new_ready = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
@@ -174,11 +174,11 @@ Trait Bftr_simple
     private function bftr_build_commit_end() {
 
         $rule_list_definition = array();
-        $rule_list_definition[self::$bftr_rule_bftr_commit_wait_func] = new Process_rule_definition();
-        $rule_list_definition[self::$bftr_rule_bftr_block_get_func] = new Process_rule_definition();
-        $rule_list_definition[self::$bftr_rule_bftr_block_stage_func] = new Process_rule_definition();
-        $rule_list_definition[self::$bftr_rule_bftr_block_broadcast_func] = new Process_rule_definition();
-        $rule_list_definition[self::$bftr_rule_bftr_commit_time_set_func] = new Process_rule_definition();
+        $rule_list_definition[self::$bftr_rule_bftr_commit_wait_func] = new Process_rule_definition_simple();
+        $rule_list_definition[self::$bftr_rule_bftr_block_get_func] = new Process_rule_definition_simple();
+        $rule_list_definition[self::$bftr_rule_bftr_block_stage_func] = new Process_rule_definition_simple();
+        $rule_list_definition[self::$bftr_rule_bftr_block_broadcast_func] = new Process_rule_definition_simple();
+        $rule_list_definition[self::$bftr_rule_bftr_commit_time_set_func] = new Process_rule_definition_simple();
 
         $transition_commit_end = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
