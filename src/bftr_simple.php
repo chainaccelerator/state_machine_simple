@@ -61,18 +61,6 @@ Trait Bftr_simple
      * @var string
      */
     private static $bftr_commit_target_state = 'commited';
-    /**
-     * @var string
-     */
-    private static $bftr_commit_OK_state = 'init_OK';
-    /**
-     * @var string
-     */
-    private static $bftr_commit_KO_state = 'init_KO';
-    /**
-     * @var string
-     */
-    private static $bftr_commit_fail_state = 'init_fail';
 
     /**
      * @var string
