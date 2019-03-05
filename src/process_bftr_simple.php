@@ -92,17 +92,17 @@ Trait Process_bftr_simple
      * @param string $version
      * @return bool
      */
-    public function bftr_build(string $version)
+    public function process_bftr_build(string $version)
     {
         $this->workflow_version = $version;
 
-        $this->bftr_build_commit_start();
-        $this->bftr_build_height_new_ready();
-        $this->bftr_build_propose();
-        $this->bftr_build_prevote();
-        $this->bftr_build_precommit();
-        $this->bftr_build_commit_end();
-        $this->bftr_build_loop();
+        $this->process_bftr_build_commit_start();
+        $this->process_bftr_build_height_new_ready();
+        $this->process_bftr_build_propose();
+        $this->process_bftr_build_prevote();
+        $this->process_bftr_build_precommit();
+        $this->process_bftr_build_commit_end();
+        $this->process_bftr_build_loop();
 
         return true;
     }
@@ -110,7 +110,7 @@ Trait Process_bftr_simple
     /**
      * @return bool
      */
-    private function bftr_build_commit_start(){
+    private function process_bftr_build_commit_start(){
 
         $rule_list_definition = array();
         $rule_list_definition[self::$bftr_rule_height_new_prepare_func] = new Process_rule_definition_simple();
@@ -124,7 +124,7 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function bftr_build_height_new_ready(){
+    private function process_bftr_build_height_new_ready(){
 
         $rule_list_definition = array();
         $rule_list_definition[self::$bftr_rule_height_new_wait_func] = new Process_rule_definition_simple();
@@ -137,7 +137,7 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function bftr_build_propose(){
+    private function process_bftr_build_propose(){
 
         $transition_propose = $this->process_workflow_build_transition(__FUNCTION__);
 
@@ -147,7 +147,7 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function bftr_build_prevote(){
+    private function process_bftr_build_prevote(){
 
         $transition_prevote = $this->process_workflow_build_transition(__FUNCTION__);
 
@@ -157,7 +157,7 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function bftr_build_precommit(){
+    private function process_bftr_build_precommit(){
 
         $rule_list_definition = array();
         $rule_list_definition[self::$bftr_rule_precommit_count_func] = new Process_rule_definition();
@@ -170,7 +170,7 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function bftr_build_commit_end() {
+    private function process_bftr_build_commit_end() {
 
         $rule_list_definition = array();
         $rule_list_definition[self::$bftr_rule_bftr_commit_wait_func] = new Process_rule_definition_simple();
@@ -187,10 +187,11 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function bftr_build_loop(){
+    private function process_bftr_build_loop(){
 
         $transition_loop = $this->process_workflow_build_transition(__FUNCTION__);
 
         return $this->process_workflow_transition_add($transition_loop);
     }
 }
+
