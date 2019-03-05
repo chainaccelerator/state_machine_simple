@@ -14,7 +14,7 @@ trait Process_workflow_simple
     /**
      * @var string
      */
-    private $workflow_version;
+    protected $workflow_version;
     /**
      * @var string
      */
