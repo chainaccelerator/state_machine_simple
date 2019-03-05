@@ -1,10 +1,9 @@
 <?php
 
-
 /**
  * Trait Bftr_simple
  */
-Trait Bftr_simple
+Trait Process_bftr_simple
 {
     use Process_workflow_simple;
     use Chain_simple;
@@ -194,5 +193,4 @@ Trait Bftr_simple
 
         return $this->process_workflow_transition_add($transition_loop);
     }
-
 }
