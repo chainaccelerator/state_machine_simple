@@ -15,6 +15,12 @@ class Process_rule_definition {
      */
     public $required_ok_state = true;
 
+    public function __construct(array $param_list = array(), bool $required_ok_state = true){
+
+        $this->param_list = $param_list;
+        $this->required_ok_state = $required_ok_state;
+    }
+
 }
 
 /**
