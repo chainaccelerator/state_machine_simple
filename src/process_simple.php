@@ -1,5 +1,22 @@
 <?php
 
+
+/**
+ * Class Bftr_rule_definition
+ */
+class Process_rule_definition {
+
+    /**
+     * @var array
+     */
+    public $param_list = array();
+    /**
+     * @var bool
+     */
+    public $required_ok_state = true;
+
+}
+
 /**
  * Class Process_state_simple
  */
@@ -556,5 +573,50 @@ trait Process_workflow_simple
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * @param string $function_name
+     * @param array $param_list
+     * @param bool $required_ok_state
+     * @return Process_rule_simple
+     */
+    protected function process_workflow_build_rule(string $function_name, array $param_list = array(), bool $required_ok_state = true){
+
+        $rule = new Process_rule_simple();
+        $rule->build($function_name, true, false, $this->workflow_name, $required_ok_state, $param_list);
+
+        return $rule;
+    }
+
+    /**
+     * @param Process_transition_simple $transition
+     * @param array $rule_list_definition
+     * @return Process_transition_simple
+     */
+    protected function process_workflow_build_rules_add(Process_transition_simple $transition, array $rule_list_definition = array()) {
+
+        foreach($rule_list_definition as $rule_name => $rule_definition) {
+
+            $rule = $this->process_workflow_build_rule($rule_name, $rule_definition->param_list, $rule_definition->required_state_ok);
+            $transition->rule_list_add($rule);
+        }
+        return $transition;
+    }
+
+    /**
+     * @param string $transition_name
+     * @param array $rule_list_definition
+     * @return Process_transition_simple
+     */
+    protected function process_workflow_build_transition(string $transition_name, array $rule_list_definition = array()){
+
+        $transition = new Process_transition_simple();
+        $transition->build($transition_name, $this->workflow_name, false);
+
+        $transition = $this->process_workflow_build_rules_add($transition, $rule_list_definition);
+
+        return $transition;
     }
 }
