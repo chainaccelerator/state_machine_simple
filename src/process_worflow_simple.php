@@ -14,19 +14,19 @@ trait Process_workflow_simple
     /**
      * @var string
      */
-    protected $workflow_version;
+    public $workflow_version;
     /**
      * @var string
      */
-    protected $workflow_name;
+    public $workflow_name;
     /**
      * @var array
      */
-    private $workflow_child = array();
+    public $workflow_child = array();
     /**
      * @var array
      */
-    private $workflow_transition_list = array();
+    public $workflow_transition_list = array();
 
     /**
      * @param string $state_initial_name
@@ -88,35 +88,39 @@ trait Process_workflow_simple
     }
 
     /**
-     * @param int $timestamp
      * @param int $ttl
      * @param int $wait
+     * @param int|bool $timestamp
      * @return bool
      */
-    public static function process_workflow_ttl_verif_and_wait(int $timestamp, int $ttl, int $wait)
+    public static function process_workflow_ttl_verif_and_wait_before_ok(int $ttl, int $wait, $timestamp = true)
     {
+        $loop_count = 0;
 
-        while (self::process_workflow_ttl_verif($timestamp, $ttl) === true) {
+        while (self::process_workflow_ttl_verif_before_ok($timestamp, $ttl) === false) {
 
-            return false;
+            sleep($wait);
+            $loop_count++;
         }
-        sleep($wait);
-
-        return true;
+        return ($loop_count * $wait);
     }
 
     /**
-     * @param int $timestamp
      * @param int $ttl
+     * @param int|bool $timestamp
      * @return bool
      */
-    public static function process_workflow_ttl_verif(int $timestamp, int $ttl)
+    public static function process_workflow_ttl_verif_before_ok(int $ttl, $timestamp = true)
     {
+        if($timestamp === true) {
+
+            $timestamp = microtime();
+        }
         if (time() - $timestamp > $ttl) {
 
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
 
