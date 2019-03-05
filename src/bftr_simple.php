@@ -2,14 +2,6 @@
 
 
 /**
- * Class Bftr_commit
- */
-class Bftr_commit {
-
-    use Block_simple;
-}
-
-/**
  * Trait Bftr_simple
  */
 Trait Bftr_simple
