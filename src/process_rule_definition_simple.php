@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Class Bftr_rule_definition
+* Class Process_rule_definition_simple
  */
 class Process_rule_definition_simple {
 
