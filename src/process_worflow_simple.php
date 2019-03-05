@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Trait Process_workflow_simple
  */
@@ -19,7 +18,7 @@ trait Process_workflow_simple
     /**
      * @var string
      */
-    private $workflow_name;
+    protected $workflow_name;
     /**
      * @var array
      */
@@ -63,7 +62,7 @@ trait Process_workflow_simple
     {
         $state = new Process_state_simple();
 
-        $state->build_initial($name);
+        $state->build_initial($name, $this->workflow_name);
 
         return $state;
     }
