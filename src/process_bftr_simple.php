@@ -100,7 +100,7 @@ Trait Process_bftr_simple
         $this->process_bftr_build_commit_end();
         $this->process_bftr_build_loop();
 
-        return true;
+        return json_encode($this);
     }
 
     /**
