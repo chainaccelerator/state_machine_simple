@@ -164,3 +164,4 @@ trait Process_workflow_simple
         return $transition;
     }
 }
+
