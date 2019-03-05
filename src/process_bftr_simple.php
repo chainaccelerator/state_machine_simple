@@ -154,6 +154,11 @@ Trait Process_bftr_simple
         $rule_list_definition[self::$process_bftr_rule_precommit_count_func] = new Process_rule_definition_simple();
 
         $transition_precommit = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
+        $rule_precommit_count = $transition_precommit->rule_get(self::$process_bftr_rule_precommit_count_func);
+
+        $rule_precommit_count->transition_ko = $this->workflow_transition_list['process_bftr_build_propose'];
+
+        $transition_precommit->rule_set($rule_precommit_count);
 
         return $this->process_workflow_transition_add($transition_precommit);
     }
@@ -243,7 +248,7 @@ Trait Process_bftr_simple
 
         if($this->process_bftr_precommit_count < $process_bftr_precommit_found_min) {
 
-            return $this->process_bftr_build_propose();
+            return false;
         }
         return true;
     }

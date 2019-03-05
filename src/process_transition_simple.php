@@ -69,6 +69,24 @@ class Process_transition_simple {
     }
 
     /**
+     * @param string $rule_name
+     * @return Process_rule_simple
+     */
+    public function rule_get(string $rule_name) {
+
+        return $this->rule_list[$rule_name];
+    }
+
+    /**
+     * @param string Process_rule_simple
+     * @return Process_rule_simple
+     */
+    public function rule_set(Process_rule_simple $rule) {
+
+        return $this->rule_list[$rule->name] = $rule;
+    }
+
+    /**
      * @param Process_state_simple $state_end
      * @return bool
      */
@@ -76,7 +94,7 @@ class Process_transition_simple {
     {
         $this->state_end_list[] = $state_end;
 
-        return true;
+        return $state_end;
     }
 
     /**

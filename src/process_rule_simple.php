@@ -8,39 +8,39 @@ class Process_rule_simple {
     /**
      * @var array
      */
-    private $input_params = array();
+    public $input_params = array();
     /**
-     * @var
+     * @var string
      */
     public $name;
     /**
-     * @var
+     * @var mixed
      */
-    private $value_ok;
+    public $value_ok;
     /**
-     * @var
+     * @var Process_transition_simple
      */
-    private $transition_ok;
+    public $transition_ok;
     /**
-     * @var
+     * @var mixed
      */
-    private $value_ko;
+    public $value_ko;
     /**
-     * @var
+     * @var Process_transition_simple
      */
-    private $transition_ko;
+    public $transition_ko;
     /**
-     * @var
+     * @var Process_transition_simple
      */
-    private $transition_fail;
+    public $transition_fail;
     /**
      * @var bool
      */
-    private $required_ok_state = true;
+    public $required_ok_state = true;
     /**
-     * @var
+     * @var srting
      */
-    private $workflow_name;
+    public $workflow_name;
 
     /**
      * @param string $function

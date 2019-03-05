@@ -81,7 +81,7 @@ trait Process_workflow_simple
     public function process_workflow_transition_add(Process_transition_simple $transition) {
 
         $index = count($this->workflow_transition_list);
-        $this->workflow_transition_list[] = $transition;
+        $this->workflow_transition_list[$transition->name] = $transition;
         $transition->index = $index;
 
         return $index;
