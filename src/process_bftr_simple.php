@@ -330,6 +330,8 @@ Trait Process_bftr_simple
      */
     public function process_bftr_block_get(array $input_params = array()){
 
+        
+
         return true;
     }
 
