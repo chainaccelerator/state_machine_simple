@@ -167,5 +167,20 @@ trait Process_workflow_simple
 
         return $transition;
     }
+
+    /**
+     * @var Log_simple_code
+     * @var array $access_list
+     * @return bool
+     */
+    protected function process_workflow_store(Log_simple_code $log_code, array $access_list = array()){
+
+        $log_code_interface = new Log_simple_code_Interface($ref, $signature, $public_key);
+
+        $log_code->interface_set($log_code_interface);
+        $log_code->put($ref, $this->, $access_list);
+
+        return true;
+    }
 }
 

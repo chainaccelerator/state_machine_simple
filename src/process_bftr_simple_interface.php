@@ -6,43 +6,51 @@
 interface Process_bftr_simple_interface {
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_commit_start();
+    public function process_bftr_build_commit_start(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_height_new_ready();
+    public function process_bftr_build_height_new_ready(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_propose();
+    public function process_bftr_build_propose(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_prevote();
+    public function process_bftr_build_prevote(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_precommit();
+    public function process_bftr_build_precommit(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_commit_ready();
+    public function process_bftr_build_commit_ready(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_commit_end();
+    public function process_bftr_build_commit_end(array $input_params = array());
 
     /**
+     * @var array $input_params
      * @return bool
      */
-    public function process_bftr_build_loop();
+    public function process_bftr_build_loop(array $input_params = array());
 }
 
