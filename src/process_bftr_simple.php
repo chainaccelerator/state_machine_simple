@@ -411,7 +411,7 @@ Trait Process_bftr_simple
      */
     public function process_bftr_block_get(array $input_params = array()){
 
-        $this->process_bar_block_data_received = $this->block_get('commit', $this->process_bftr_height_new_push_address);
+        $this->process_bar_block_data_received = $this->process_bftr_block_get_from_network('commit', $this->process_bftr_height_new_push_address);
 
         return true;
     }
@@ -493,6 +493,20 @@ Trait Process_bftr_simple
     private function process_bftr_push(string $step_name, string $height_new_push_address){
 
         return $this->socket_client_push_broadcast_send('/'.$step_name.'/block', $this->workflow_transition_list);
+    }
+
+    /**
+     * @var string $step_name
+     * @var string $height_new_push_address
+     * @return Block_simple_data
+     */
+    public function process_bftr_block_get_from_network(string $step_name, string $height_new_push_address) {
+
+        $response = $this->socket_client_push_broadcast_request_count_get('/'.$step_name.'/block/'.$height_new_push_address);
+
+        $block_data = $response->data->block_data;
+
+        return $block_data;
     }
 }
 
