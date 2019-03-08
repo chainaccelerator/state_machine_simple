@@ -7,7 +7,7 @@ Trait Process_bftr_simple
 {
     use Process_workflow_simple;
     use Chain_simple;
-    use Socket_client_push_simple;
+    use Socket_client_push_broadcast_simple;
 
     /**
      * @var float|int
@@ -55,6 +55,11 @@ Trait Process_bftr_simple
      * @var string
      */
     public static $process_bftr_rule_precommit_func = 'process_bftr_precommit';
+
+    /**
+     * @var string
+     */
+    public static $process_bftr_rule_commit_count_func = 'process_bftr_commit_count';
     /**
      * @var string
      */
@@ -77,22 +82,55 @@ Trait Process_bftr_simple
     public static $process_bftr_rule_commit_time_set_func = 'process_bftr_commit_time_set';
 
     /**
+     * @var string
+     */
+    public static $process_bftr_rule_block_wait_func = 'process_bftr_block_wait';
+
+    /**
      * @var
      */
     public $process_bftr_height_new_push_address;
+
+    /**
+     * @var
+     */
+    public $process_bftr_build_commit_ready_loop_count = 0;
     /**
      * @var int
      */
-    public $process_bftr_height_new_wait_total = 0;
+    public $process_bftr_height_new_wait_loop_count = 0;
     /**
      * @var int
      */
     public $process_bftr_precommit_count = 0;
+    /**
+     * @var int
+     */
+    public $process_bftr_commit_count = 0;
 
     /**
      * @var string
      */
     private $process_bftr_previous = '';
+    /**
+     * @var int
+     */
+    public $process_bftr_loop_wait = 0;
+
+    /**
+     * @var int
+     */
+    public static $process_bftr_block_wait = 1000;
+
+    /**
+     * @var Block_simple_data
+     */
+    public $process_bftr_block_data_recieved;
+
+    /**
+     * @var int
+     */
+    public $process_bftr_commit_time = 0;
     /**
      * @param string $version
      * @return bool
@@ -106,6 +144,7 @@ Trait Process_bftr_simple
         $this->process_bftr_build_propose();
         $this->process_bftr_build_prevote();
         $this->process_bftr_build_precommit();
+        $this->process_bftr_build_commit_ready();
         $this->process_bftr_build_commit_end();
         $this->process_bftr_build_loop();
 
@@ -203,10 +242,32 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    private function process_bftr_build_commit_end() {
+    private function process_bftr_build_commit_ready() {
+
+        $this->process_bftr_build_commit_ready_loop_count++;
 
         $rule_list_definition = array();
         $rule_list_definition[self::$process_bftr_rule_commit_wait_func] = new Process_rule_definition_simple();
+        $rule_list_definition[self::$process_bftr_rule_commit_count_func] = new Process_rule_definition_simple();
+
+        $transition_commit_ready = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
+
+        $this->process_workflow_transition_add($transition_commit_ready);
+
+        $rule_commit_count = $transition_commit_ready->rule_get(self::$process_bftr_rule_commit_count_func);
+        $rule_commit_count->transition_ko = $this->workflow_transition_list['process_bftr_build_commit_ready'];
+
+        $transition_commit_ready->rule_set($rule_commit_count);
+
+        return $this->process_bftr_follow(__FUNCTION__);
+    }
+
+    /**
+     * @return int
+     */
+    private function process_bftr_build_commit_end() {
+
+        $rule_list_definition = array();
         $rule_list_definition[self::$process_bftr_rule_block_get_func] = new Process_rule_definition_simple();
         $rule_list_definition[self::$process_bftr_rule_block_stage_func] = new Process_rule_definition_simple();
         $rule_list_definition[self::$process_bftr_rule_block_broadcast_func] = new Process_rule_definition_simple();
@@ -224,9 +285,17 @@ Trait Process_bftr_simple
      */
     private function process_bftr_build_loop(){
 
-        $transition_loop = $this->process_workflow_build_transition(__FUNCTION__);
+        $rule_list_definition = array();
+        $rule_list_definition[self::$process_bftr_rule_block_wait_func] = new Process_rule_definition_simple();
+
+        $transition_loop = $this->process_workflow_build_transition(__FUNCTION__, $rule_list_definition);
 
         $this->process_workflow_transition_add($transition_loop);
+
+        $rule_block_wait = $transition_loop->rule_get(self::$process_bftr_rule_block_wait_func);
+        $rule_block_wait->transition_ok = $this->workflow_transition_list['process_bftr_build_commit_start'];
+
+        $transition_loop->rule_set($rule_block_wait);
 
         return $this->process_bftr_follow(__FUNCTION__);
     }
@@ -249,7 +318,7 @@ Trait Process_bftr_simple
     /**
      * @return float|int
      */
-    public function process_bftr_commit_ttl_get() {
+    private static function process_bftr_commit_ttl_get() {
 
         return self::$process_bftr_commit_ttl;
     }
@@ -257,7 +326,7 @@ Trait Process_bftr_simple
     /**
      * @return int
      */
-    public function process_bftr_commit_wait_get() {
+    private static function process_bftr_commit_wait_get() {
 
         return self::$process_bftr_commit_wait;
     }
@@ -268,15 +337,21 @@ Trait Process_bftr_simple
      */
     public function process_bftr_height_new_wait(array $input_params = array()){
 
-        $msg = json_encode($this->block_data);
+        $this->process_bftr_height_new_push_address = $this->socket_client_push_broadcast('/propose/block', $this->block_data);
 
-        $this->process_bftr_height_new_push_address = $this->socket_client_push_broadcast($msg, $this->workflow_transition_list);
-
-        $ttl = $this->process_bftr_commit_ttl_get();
-        $wait = $this->process_bftr_commit_wait_get();
-        $this->process_bftr_height_new_wait_total = $this->process_workflow_ttl_verif_and_wait_before_ok($ttl, $wait, true);
+        $ttl = self::process_bftr_commit_ttl_get();
+        $wait = self::process_bftr_commit_wait_get();
+        $this->process_bftr_height_new_wait_loop_count = $this->process_workflow_ttl_verif_and_wait_before_ok($ttl, $wait, $this->process_bftr_commit_time);
 
         return true;
+    }
+
+    /**
+     * @return float|int
+     */
+    private static function process_bftr_precommit_found_min_get(){
+
+        return self::$process_bftr_precommit_found_min;
     }
 
     /**
@@ -285,11 +360,9 @@ Trait Process_bftr_simple
      */
     public function process_bftr_precommit_count(array $input_params = array()){
 
-        $response = $this->socket_client_push_broadcast_request_count($this->process_bftr_height_new_push_address);
+        $process_bftr_precommit_found_min = self::process_bftr_precommit_found_min_get();
 
-        $this->process_bftr_precommit_count = $response->data->bftr_precommit_count;
-
-        return true;
+        return $this->process_bftr_count_get('precommit', $this->process_bftr_height_new_push_address, $process_bftr_precommit_found_min);
     }
 
     /**
@@ -304,9 +377,20 @@ Trait Process_bftr_simple
     /**
      * @return float|int
      */
-    public function process_bftr_precommit_found_min_get(){
+    private static function process_bftr_commit_found_min_get(){
 
-        return self::$process_bftr_precommit_found_min;
+        return self::$process_bftr_commit_found_min;
+    }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
+    public function process_bftr_commit_count(array $input_params = array()){
+
+        $process_bftr_commit_found_min = self::process_bftr_commit_found_min_get();
+
+        return $this->process_bftr_count_get('commit', $this->process_bftr_height_new_push_address, $process_bftr_commit_found_min);
     }
 
     /**
@@ -315,12 +399,10 @@ Trait Process_bftr_simple
      */
     public function process_bftr_commit_wait(array $input_params = array()){
 
-        $process_bftr_precommit_found_min = $this->process_bftr_precommit_found_min_get();
+        $wait = $this->process_bftr_commit_wait_get();
 
-        if($this->process_bftr_precommit_count < $process_bftr_precommit_found_min) {
+        sleep($wait);
 
-            return false;
-        }
         return true;
     }
 
@@ -330,7 +412,7 @@ Trait Process_bftr_simple
      */
     public function process_bftr_block_get(array $input_params = array()){
 
-        
+        $this->process_bftr_block_data_recieved = $this->block_get('commit', $this->process_bftr_height_new_push_address);
 
         return true;
     }
@@ -341,7 +423,7 @@ Trait Process_bftr_simple
      */
     public function process_bftr_block_stage(array $input_params = array()){
 
-        return true;
+        return $this->chain_block_stage($this->process_bftr_block_data_recieved);
     }
 
     /**
@@ -349,6 +431,8 @@ Trait Process_bftr_simple
      * @return bool
      */
     public function process_bftr_block_broadcast(array $input_params = array()){
+
+        $this->process_bftr_push('commit', $this->process_bftr_block_data_recieved->cost);
 
         return true;
     }
@@ -359,7 +443,57 @@ Trait Process_bftr_simple
      */
     public function process_bftr_commit_time_set(array $input_params = array()){
 
+        $this->process_bftr_commit_time = microtime();
+
         return true;
+    }
+
+    private static function process_bftr_block_wait_get(){
+
+        return self::$process_bftr_block_wait;
+    }
+
+    /**
+     * @param array $input_params
+     * @return bool
+     */
+    public function process_bftr_block_wait(array $input_params = array()){
+
+        $wait = self::process_bftr_block_wait_get();
+
+        sleep($wait);
+
+        return true;
+    }
+
+    /**
+     * @param string $step_name
+     * @param string $height_new_push_address
+     * @param int $result_count_min
+     * @return bool
+     */
+    public function process_bftr_count_get(string $step_name, string $height_new_push_address, int $result_count_min){
+
+        $response = $this->socket_client_push_broadcast_request_count_get('/'.$step_name.'/block/push/'.$height_new_push_address.'/count');
+
+        $count = $response->data->count;
+
+        if($count < $count) {
+
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param string $step_name
+     * @param string $height_new_push_address
+     * @param int $result_count_min
+     * @return bool
+     */
+    public function process_bftr_push(string $step_name, string $height_new_push_address){
+
+        return $this->socket_client_push_broadcast_send('/'.$step_name.'/block', $this->workflow_transition_list);
     }
 }
 

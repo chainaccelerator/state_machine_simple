@@ -97,7 +97,7 @@ trait Process_workflow_simple
     {
         $loop_count = 0;
 
-        while (self::process_workflow_ttl_verif_before_ok($timestamp, $ttl) === false) {
+        while (self::process_workflow_ttl_verif_before_ok($ttl, $timestamp) === false) {
 
             sleep($wait);
             $loop_count++;

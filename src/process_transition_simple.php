@@ -5,6 +5,8 @@
  */
 class Process_transition_simple {
 
+    use Socket_client_push_simple;
+
     /**
      * @var
      */
@@ -20,19 +22,32 @@ class Process_transition_simple {
     /**
      * @var array
      */
-    private $rule_list = array();
+    public $rule_list = array();
     /**
      * @var bool
      */
-    private $required_state = true;
+    public $required_state = true;
     /**
      * @var bool
      */
-    private $async_state = false;
+    public $async_state = false;
     /**
      * @var
      */
-    private $workflow_name;
+    public $workflow_name;
+    /**
+     * @var Process_state_simple
+     */
+    public $state_start;
+    /**
+     * @var Process_state_simple
+     */
+    public $state_end:
+
+    /**
+     * @var
+     */
+    public $input_params = array();
 
     /**
      * @param string $name
@@ -88,7 +103,7 @@ class Process_transition_simple {
 
     /**
      * @param Process_state_simple $state_end
-     * @return bool
+     * @return Process_state_simple
      */
     public function state_end_list_add(Process_state_simple $state_end)
     {
