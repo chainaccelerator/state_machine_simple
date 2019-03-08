@@ -94,6 +94,40 @@ Trait Process_bftr_simple
     /**
      * @var string
      */
+    public static $process_bftr_build_commit_start = 'process_bftr_build_commit_start';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_height_new_ready = 'process_bftr_build_height_new_ready';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_propose = 'process_bftr_build_propose';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_prevote = 'process_bftr_build_prevote';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_precommit = 'process_bftr_build_precommit';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_commit_ready = 'process_bftr_build_commit_ready';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_commit_end = 'process_bftr_build_commit_end';
+    /**
+     * @var string
+     */
+    public static $process_bftr_build_loop = 'process_bftr_build_loop';
+
+
+    /**
+     * @var string
+     */
     private $process_bftr_previous = '';
 
     /**
@@ -447,6 +481,9 @@ Trait Process_bftr_simple
         return true;
     }
 
+    /**
+     * @return int
+     */
     private static function process_bftr_block_wait_get(){
 
         return self::$process_bftr_block_wait;

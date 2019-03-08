@@ -113,9 +113,10 @@ class Process_transition_simple {
     }
 
     /**
+     * @var Process_transition_simple $condition_obj
      * @return bool
      */
-    public function run(){
+    public function run(Process_transition_simple $condition_obj){
 
         $this->state_start->confirm();
         $this->state_end->target();

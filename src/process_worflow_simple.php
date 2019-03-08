@@ -6,6 +6,8 @@
 trait Process_workflow_simple
 {
 
+    use Crypto_simple;
+
     /**
      * @var array
      */
@@ -169,16 +171,36 @@ trait Process_workflow_simple
     }
 
     /**
-     * @var Log_simple_code
-     * @var array $access_list
+     * @param Log_simple_code $log_code
+     * @param array $access_list
      * @return bool
      */
     protected function process_workflow_store(Log_simple_code $log_code, array $access_list = array()){
 
-        $log_code_interface = new Log_simple_code_Interface($ref, $signature, $public_key);
+        $this->sign_init();
 
+        $class_name = get_class($this);
+        $class = new ReflectionClass($class_name);
+        $methods = $class->getMethods();
+
+        $signature = $this->sign(implode('',$this->workflow_transition_list));
+        $public_key = $this->sign_public_key_get();
+        $log_code_interface = new Log_simple_code_Interface($this->process_bftr_height_new_push_address, $signature, $public_key);
+
+        foreach($methods as $method_name) {
+
+            $log_argument = new Log_simple_code_argument('input_params', 'array', array(), 1000000, false);
+            $log_return = new Log_simple_code_return('result', 'bool', array(), 1000000000, false,
+                                false, array(), array(), true);
+
+            $log_function = new Log_simple_code_function($method_name, $class_name);
+            $log_function->argument_add($log_argument);
+            $log_function->return_add($log_return);
+
+            $index = $log_code_interface->function_add($log_function);
+        }
         $log_code->interface_set($log_code_interface);
-        $log_code->put($ref, $this->, $access_list);
+        $log_code->put($this->process_bftr_height_new_push_address, $log_code_interface, $access_list);
 
         return true;
     }
