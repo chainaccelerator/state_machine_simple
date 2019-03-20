@@ -176,7 +176,7 @@ trait Process_workflow_simple
      * @return bool
      * @throws ReflectionException
      */
-    protected function process_workflow_store(Log_simple_code $log_code, array $access_list = array()){
+    public function process_workflow_store(Log_simple_code $log_code, array $access_list = array()){
 
         $this->sign_init();
 
@@ -198,10 +198,26 @@ trait Process_workflow_simple
             $log_function->argument_add($log_argument);
             $log_function->return_add($log_return);
 
-            $index = $log_code_interface->function_add($log_function);
+            $log_code_interface->function_add($log_function);
         }
         $log_code->interface_set($log_code_interface);
-        $log_code->put($this->process_bftr_height_new_push_address, $log_code_interface, $access_list);
+        $log_code->put($this->process_bftr_height_new_push_address, $access_list);
+
+        return true;
+    }
+
+    /**
+     * @param Log_simple_code_Interface_call $log_code_Interface_call
+     * @param Log_simple_code $log_code
+     * @param array $access_list
+     * @return bool
+     * @throws ReflectionException
+     */
+    public function process_workflow_call(Log_simple_code_Interface_call $log_code_Interface_call, Log_simple_code $log_code, string $public_key, array $access_list = array()){
+
+        $log_code->log_storage_extract();
+
+        $log_code->run($log_code_Interface_call);
 
         return true;
     }
