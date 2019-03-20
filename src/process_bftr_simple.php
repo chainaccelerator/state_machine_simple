@@ -529,7 +529,7 @@ Trait Process_bftr_simple
      */
     private function process_bftr_push(string $step_name, string $height_new_push_address){
 
-        return $this->socket_client_push_broadcast_send('/'.$step_name.'/block', $this->workflow_transition_list);
+        return $this->socket_client_push_broadcast_send('/'.$step_name.'/block/'.$height_new_push_address.'/send', $this->workflow_transition_list);
     }
 
     /**
