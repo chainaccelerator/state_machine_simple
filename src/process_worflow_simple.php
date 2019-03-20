@@ -174,6 +174,7 @@ trait Process_workflow_simple
      * @param Log_simple_code $log_code
      * @param array $access_list
      * @return bool
+     * @throws ReflectionException
      */
     protected function process_workflow_store(Log_simple_code $log_code, array $access_list = array()){
 

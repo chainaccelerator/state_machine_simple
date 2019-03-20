@@ -514,7 +514,7 @@ Trait Process_bftr_simple
 
         $count = $response->data->count;
 
-        if($count < $count) {
+        if($count < $result_count_min) {
 
             return false;
         }
