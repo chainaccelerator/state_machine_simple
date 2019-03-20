@@ -42,7 +42,7 @@ class Process_transition_simple {
     /**
      * @var Process_state_simple
      */
-    public $state_end:
+    public $state_end;
 
     /**
      * @var
@@ -93,7 +93,7 @@ class Process_transition_simple {
     }
 
     /**
-     * @param string Process_rule_simple
+     * @param Process_rule_simple $rule
      * @return Process_rule_simple
      */
     public function rule_set(Process_rule_simple $rule) {
